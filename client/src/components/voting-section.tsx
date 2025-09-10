@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { type Submission } from "@shared/schema";
 import { formatAddress, generateMockTokenData } from "@/lib/solana-utils";
-import { ThumbsUp, TrendingUp } from "lucide-react";
+import { ThumbsUp, TrendingUp, ExternalLink } from "lucide-react";
 
 export default function VotingSection() {
   const { toast } = useToast();
@@ -133,19 +133,22 @@ export default function VotingSection() {
                     </div>
                   </div>
                   
-                  {/* Chart placeholder */}
-                  <div className="h-32 rounded-lg mb-4 flex items-center justify-center border border-border bg-gradient-to-r from-primary/10 to-accent/10">
-                    <div className="text-center">
-                      <TrendingUp className="h-8 w-8 text-muted-foreground mb-2 mx-auto" />
-                      <p className="text-sm text-muted-foreground">Live Chart Integration</p>
-                    </div>
+                  {/* Pump.fun chart link */}
+                  <div className="mb-4">
+                    <a 
+                      href={`https://pump.fun/coin/${submission.contractAddress}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-full h-16 rounded-lg border border-border bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 transition-all duration-300 text-muted-foreground hover:text-foreground"
+                      data-testid={`link-chart-${submission.id}`}
+                    >
+                      <TrendingUp className="h-5 w-5 mr-2" />
+                      <span className="font-medium">View Chart on Pump.fun</span>
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </a>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <div className="text-sm space-y-1">
-                      <p className="text-muted-foreground">Market Cap: <span className="text-foreground font-medium">$2.1M</span></p>
-                      <p className="text-muted-foreground">24h: <span className="text-accent font-medium">+15.3%</span></p>
-                    </div>
                     <Button 
                       onClick={() => handleVote(submission.id)}
                       disabled={voteMutation.isPending}
