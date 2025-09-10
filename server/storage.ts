@@ -42,7 +42,10 @@ export class MemStorage implements IStorage {
   async createSubmission(insertSubmission: InsertSubmission): Promise<Submission> {
     const id = randomUUID();
     const submission: Submission = { 
-      ...insertSubmission, 
+      ...insertSubmission,
+      tokenName: insertSubmission.tokenName || null,
+      tokenSymbol: insertSubmission.tokenSymbol || null,
+      submittedBy: insertSubmission.submittedBy || null,
       id,
       votes: 0,
       createdAt: new Date()
@@ -62,7 +65,8 @@ export class MemStorage implements IStorage {
   async createVote(insertVote: InsertVote): Promise<Vote> {
     const id = randomUUID();
     const vote: Vote = { 
-      ...insertVote, 
+      ...insertVote,
+      voterAddress: insertVote.voterAddress || null,
       id,
       createdAt: new Date()
     };
@@ -91,7 +95,10 @@ export class MemStorage implements IStorage {
   async createPumpHistory(insertPumpHistory: InsertPumpHistory): Promise<PumpHistory> {
     const id = randomUUID();
     const pumpHistoryEntry: PumpHistory = { 
-      ...insertPumpHistory, 
+      ...insertPumpHistory,
+      tokenSymbol: insertPumpHistory.tokenSymbol || null,
+      priceImpact: insertPumpHistory.priceImpact || null,
+      transactionHash: insertPumpHistory.transactionHash || null,
       id,
       createdAt: new Date()
     };

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertSubmissionSchema, insertVoteSchema } from "@shared/schema";
+import { tokenService } from "./token-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -29,8 +30,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const submission = await storage.createSubmission(data);
-      res.status(201).json(submission);
+      // Try to fetch real token metadata
+      const tokenMetadata = await tokenService.getTokenMetadataWithFallback(data.contractAddress);
+      
+      // Use real data if available, otherwise use submitted data or fallback
+      const submissionData = {
+        ...data,
+        tokenName: tokenMetadata?.name || data.tokenName || `Token ${data.contractAddress.slice(0, 6)}`,
+        tokenSymbol: tokenMetadata?.symbol || data.tokenSymbol || 'UNK'
+      };
+
+      const submission = await storage.createSubmission(submissionData);
+      res.status(201).json({
+        ...submission,
+        metadata: tokenMetadata ? {
+          source: 'api',
+          logo: tokenMetadata.logo
+        } : {
+          source: 'fallback'
+        }
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid submission data", errors: error.errors });

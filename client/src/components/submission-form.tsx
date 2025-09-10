@@ -36,21 +36,21 @@ export default function SubmissionForm() {
 
   const submitMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const tokenData = generateMockTokenData(data.contractAddress);
       const submissionData = {
         ...data,
-        tokenName: tokenData.name,
-        tokenSymbol: tokenData.symbol,
         submittedBy: "7K4x...9mL2" // Mock wallet address
       };
       
       const response = await apiRequest("POST", "/api/submissions", submissionData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const source = data.metadata?.source;
       toast({
         title: "Success!",
-        description: "Token submitted successfully",
+        description: source === 'api' 
+          ? "Token submitted with real metadata!" 
+          : "Token submitted successfully",
       });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/submissions"] });

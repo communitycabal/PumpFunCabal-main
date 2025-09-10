@@ -6,7 +6,11 @@ import PumpFeed from "@/components/pump-feed";
 import { Rocket, Wallet } from "lucide-react";
 
 export default function Home() {
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalPool: number;
+    totalVotes: number;
+    submissionCount: number;
+  }>({
     queryKey: ["/api/stats"],
   });
 
