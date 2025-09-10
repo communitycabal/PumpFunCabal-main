@@ -3,7 +3,7 @@ import CountdownSection from "@/components/countdown-section";
 import SubmissionForm from "@/components/submission-form";
 import VotingSection from "@/components/voting-section";
 import PumpFeed from "@/components/pump-feed";
-import { Rocket, Wallet } from "lucide-react";
+import { Rocket } from "lucide-react";
 
 export default function Home() {
   const { data: stats } = useQuery<{
@@ -28,18 +28,6 @@ export default function Home() {
                 <h1 className="text-xl font-bold text-foreground">Community Cabal</h1>
                 <p className="text-sm text-muted-foreground">$CC</p>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-muted/50 px-3 py-2 rounded-lg">
-                <Wallet className="text-accent h-4 w-4" />
-                <span className="text-sm font-medium">7K4x...9mL2</span>
-              </div>
-              <button 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors"
-                data-testid="button-connect-wallet"
-              >
-                Connect Wallet
-              </button>
             </div>
           </div>
         </div>
