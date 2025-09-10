@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Coins, Vote, TrendingUp } from "lucide-react";
+import { Vote, TrendingUp } from "lucide-react";
 
 interface Stats {
   totalPool: number;
@@ -52,20 +52,7 @@ export default function CountdownSection({ stats }: CountdownSectionProps) {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <Card className="bg-card border border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-accent/20 rounded-lg mx-auto mb-4">
-              <Coins className="text-accent text-xl" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Total Pool</h3>
-            <p className="text-2xl font-bold text-accent" data-testid="text-total-pool">
-              {stats?.totalPool || 12.4} SOL
-            </p>
-            <p className="text-sm text-muted-foreground">~$2,486</p>
-          </CardContent>
-        </Card>
-        
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
         <Card className="bg-card border border-border">
           <CardContent className="p-6">
             <div className="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-lg mx-auto mb-4">

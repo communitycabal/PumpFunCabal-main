@@ -110,9 +110,6 @@ export default function VotingSection() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                        {tokenData.emoji}
-                      </div>
                       <div>
                         <h3 className="text-xl font-bold" data-testid={`text-token-name-${submission.id}`}>
                           {submission.tokenName || tokenData.name}
