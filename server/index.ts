@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { roundService } from "./round-service";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -68,4 +70,23 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
+
+  // Round processor: checks voting and tiebreak phases
+  setInterval(async () => {
+    try {
+      if (roundService.instance.getPhase() === "voting") {
+        if (roundService.instance.getVotingRemainingSec() === 0) {
+          const result = await roundService.instance.finalizeVotingPickTopOrTie();
+          log(`Voting ended: ${result}`, "round");
+        }
+      } else {
+        if (roundService.instance.getTiebreakRemainingSec() === 0) {
+          await roundService.instance.resolveTiebreakAndRestart();
+          log("Tiebreak resolved: timer reset", "round");
+        }
+      }
+    } catch (err) {
+      log(`Round processor error: ${(err as Error).message}`, "round");
+    }
+  }, 1000);
 })();

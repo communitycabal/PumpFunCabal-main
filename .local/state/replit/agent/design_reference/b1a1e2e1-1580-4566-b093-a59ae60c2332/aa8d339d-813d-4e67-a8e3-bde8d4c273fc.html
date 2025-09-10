@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Cabal ($CC) - Decentralized Pump Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                    colors: {
+                        background: "var(--background)",
+                        foreground: "var(--foreground)",
+                        card: {
+                            DEFAULT: "var(--card)",
+                            foreground: "var(--card-foreground)",
+                        },
+                        popover: {
+                            DEFAULT: "var(--popover)",
+                            foreground: "var(--popover-foreground)",
+                        },
+                        primary: {
+                            DEFAULT: "var(--primary)",
+                            foreground: "var(--primary-foreground)",
+                        },
+                        secondary: {
+                            DEFAULT: "var(--secondary)",
+                            foreground: "var(--secondary-foreground)",
+                        },
+                        muted: {
+                            DEFAULT: "var(--muted)",
+                            foreground: "var(--muted-foreground)",
+                        },
+                        accent: {
+                            DEFAULT: "var(--accent)",
+                            foreground: "var(--accent-foreground)",
+                        },
+                        destructive: {
+                            DEFAULT: "var(--destructive)",
+                            foreground: "var(--destructive-foreground)",
+                        },
+                        border: "var(--border)",
+                        input: "var(--input)",
+                        ring: "var(--ring)",
+                        success: "var(--success)",
+                        warning: "var(--warning)",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "system-ui", "sans-serif"],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-gentle': 'bounce 2s infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px var(--primary), 0 0 10px var(--primary)' },
+                            '100%': { boxShadow: '0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 30px var(--primary)' }
+                        }
+                    }
+                },
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --background: hsl(235 20% 6%);
+            --foreground: hsl(0 0% 98%);
+            --card: hsl(235 20% 8%);
+            --card-foreground: hsl(0 0% 95%);
+            --popover: hsl(235 20% 8%);
+            --popover-foreground: hsl(0 0% 95%);
+            --primary: hsl(262 84% 70%);
+            --primary-foreground: hsl(0 0% 9%);
+            --secondary: hsl(235 20% 12%);
+            --secondary-foreground: hsl(0 0% 90%);
+            --muted: hsl(235 20% 12%);
+            --muted-foreground: hsl(0 0% 65%);
+            --accent: hsl(158 78% 35%);
+            --accent-foreground: hsl(0 0% 95%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(235 20% 18%);
+            --input: hsl(235 20% 12%);
+            --ring: hsl(262 84% 70%);
+            --success: hsl(158 78% 35%);
+            --warning: hsl(45 93% 47%);
+            --radius: 0.75rem;
+        }
+        
+        .gradient-border {
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) padding-box,
+                        linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) border-box;
+            border: 2px solid transparent;
+        }
+        
+        .chart-placeholder {
+            background: linear-gradient(135deg, 
+                hsl(var(--primary) / 0.1) 0%, 
+                hsl(var(--accent) / 0.1) 50%, 
+                hsl(var(--primary) / 0.1) 100%);
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-background text-foreground min-h-screen font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="border-b border-border bg-card/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <i class="fas fa-rocket text-primary-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-foreground">Community Cabal</h1>
+                        <p class="text-sm text-muted-foreground">$CC</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2 bg-muted/50 px-3 py-2 rounded-lg">
+                        <i class="fas fa-wallet text-accent text-sm"></i>
+                        <span class="text-sm font-medium" data-mock="true">7K4x...9mL2</span>
+                    </div>
+                    <button class="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors">
+                        Connect Wallet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="container mx-auto px-4 py-8 space-y-8">
+        <!-- @COMPONENT: CountdownSection -->
+        <section class="text-center space-y-6">
+            <div class="inline-block bg-gradient-to-r from-primary to-accent p-1 rounded-2xl">
+                <div class="bg-background px-8 py-6 rounded-xl">
+                    <h2 class="text-sm uppercase tracking-wider text-muted-foreground mb-2">Next Pump In</h2>
+                    <!-- @STATE: timeRemaining:string = "06:23" -->
+                    <div class="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent animate-pulse-slow" data-bind="timeRemaining">06:23</div>
+                    <p class="text-muted-foreground mt-2">Minutes : Seconds</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-card border border-border rounded-xl p-6">
+                    <div class="flex items-center justify-center w-12 h-12 bg-accent/20 rounded-lg mx-auto mb-4">
+                        <i class="fas fa-coins text-accent text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">Total Pool</h3>
+                    <!-- @STATE: totalPool:number = 12.4 -->
+                    <p class="text-2xl font-bold text-accent" data-bind="totalPool">12.4 SOL</p>
+                    <p class="text-sm text-muted-foreground">~$2,486</p>
+                </div>
+                
+                <div class="bg-card border border-border rounded-xl p-6">
+                    <div class="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-lg mx-auto mb-4">
+                        <i class="fas fa-vote-yea text-primary text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">Active Votes</h3>
+                    <!-- @STATE: totalVotes:number = 847 -->
+                    <p class="text-2xl font-bold text-primary" data-bind="totalVotes">847</p>
+                    <p class="text-sm text-muted-foreground">This round</p>
+                </div>
+                
+                <div class="bg-card border border-border rounded-xl p-6">
+                    <div class="flex items-center justify-center w-12 h-12 bg-warning/20 rounded-lg mx-auto mb-4">
+                        <i class="fas fa-chart-line text-warning text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-lg mb-2">Submissions</h3>
+                    <!-- @STATE: submissionCount:number = 23 -->
+                    <p class="text-2xl font-bold text-warning" data-bind="submissionCount">23</p>
+                    <p class="text-sm text-muted-foreground">Competing</p>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: CountdownSection -->
+
+        <!-- @COMPONENT: SubmissionForm -->
+        <section class="max-w-2xl mx-auto">
+            <div class="bg-card border border-border rounded-2xl p-8">
+                <h2 class="text-2xl font-bold mb-6 text-center">Submit Your Token</h2>
+                
+                <form class="space-y-6" data-event="submit:handleSubmission">
+                    <div>
+                        <label for="contractAddress" class="block text-sm font-medium text-foreground mb-3">
+                            Contract Address <span class="text-destructive">*</span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="contractAddress"
+                                placeholder="Paste Solana contract address here..."
+                                class="w-full px-4 py-4 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                                data-validation="solana-address"
+                                data-mock="true"
+                            />
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <i class="fas fa-paste text-muted-foreground hover:text-primary cursor-pointer transition-colors" data-event="click:pasteAddress"></i>
+                            </div>
+                        </div>
+                        <!-- @STATE: addressError:string = "" -->
+                        <p class="text-sm text-destructive mt-2 hidden" data-bind="addressError" data-mock="true">Invalid Solana address format</p>
+                        <p class="text-sm text-muted-foreground mt-2">Only valid Pump.fun token contracts are accepted</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3 p-4 bg-muted/30 rounded-lg">
+                        <i class="fas fa-info-circle text-accent"></i>
+                        <div class="text-sm">
+                            <p class="font-medium">Submission Rules:</p>
+                            <ul class="text-muted-foreground mt-1 space-y-1">
+                                <li>• One submission per wallet per round</li>
+                                <li>• Duplicate submissions count as votes</li>
+                                <li>• Must be valid Pump.fun contract</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        class="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-semibold py-4 px-6 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                        data-implementation="Should validate address before submission"
+                    >
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Submit Token
+                    </button>
+                </form>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: SubmissionForm -->
+
+        <!-- @COMPONENT: VotingSection -->
+        <section>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold">Vote for Next Pump</h2>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-muted-foreground">Sort by:</span>
+                    <select class="bg-input border border-border rounded-lg px-3 py-2 text-sm">
+                        <option>Most Votes</option>
+                        <option>Latest</option>
+                        <option>Market Cap</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- @MAP: submissions.map(submission => ( -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Submission Card 1 -->
+                <div class="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-4">
+                            <!-- Token logo placeholder from pump.fun API -->
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground" data-mock="true">
+                                🚀
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold" data-bind="submission.name" data-mock="true">RocketCoin</h3>
+                                <p class="text-muted-foreground" data-bind="submission.ticker" data-mock="true">$ROCKET</p>
+                                <p class="text-xs text-muted-foreground mt-1" data-bind="submission.address" data-mock="true">7K4x...9mL2</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-accent" data-bind="submission.votes" data-mock="true">342</div>
+                            <p class="text-sm text-muted-foreground">votes</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart placeholder -->
+                    <div class="chart-placeholder h-32 rounded-lg mb-4 flex items-center justify-center border border-border">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-3xl text-muted-foreground mb-2"></i>
+                            <p class="text-sm text-muted-foreground">Live Chart Integration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm space-y-1">
+                            <p class="text-muted-foreground">Market Cap: <span class="text-foreground font-medium" data-mock="true">$2.1M</span></p>
+                            <p class="text-muted-foreground">24h: <span class="text-accent font-medium" data-mock="true">+15.3%</span></p>
+                        </div>
+                        <button 
+                            class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+                            data-event="click:handleVote"
+                            data-implementation="Should track votes per wallet"
+                        >
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Vote</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Submission Card 2 -->
+                <div class="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl font-bold text-primary-foreground" data-mock="true">
+                                🌙
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold" data-bind="submission.name" data-mock="true">MoonToken</h3>
+                                <p class="text-muted-foreground" data-bind="submission.ticker" data-mock="true">$MOON</p>
+                                <p class="text-xs text-muted-foreground mt-1" data-bind="submission.address" data-mock="true">9mL2...K4x7</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-accent" data-bind="submission.votes" data-mock="true">298</div>
+                            <p class="text-sm text-muted-foreground">votes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-placeholder h-32 rounded-lg mb-4 flex items-center justify-center border border-border">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-3xl text-muted-foreground mb-2"></i>
+                            <p class="text-sm text-muted-foreground">Live Chart Integration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm space-y-1">
+                            <p class="text-muted-foreground">Market Cap: <span class="text-foreground font-medium" data-mock="true">$1.8M</span></p>
+                            <p class="text-muted-foreground">24h: <span class="text-destructive font-medium" data-mock="true">-8.2%</span></p>
+                        </div>
+                        <button 
+                            class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+                            data-event="click:handleVote"
+                        >
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Vote</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Submission Card 3 -->
+                <div class="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-warning to-destructive flex items-center justify-center text-2xl font-bold text-primary-foreground" data-mock="true">
+                                🔥
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold" data-bind="submission.name" data-mock="true">FireCoin</h3>
+                                <p class="text-muted-foreground" data-bind="submission.ticker" data-mock="true">$FIRE</p>
+                                <p class="text-xs text-muted-foreground mt-1" data-bind="submission.address" data-mock="true">Xx9m...L2K4</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-accent" data-bind="submission.votes" data-mock="true">156</div>
+                            <p class="text-sm text-muted-foreground">votes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-placeholder h-32 rounded-lg mb-4 flex items-center justify-center border border-border">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-3xl text-muted-foreground mb-2"></i>
+                            <p class="text-sm text-muted-foreground">Live Chart Integration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm space-y-1">
+                            <p class="text-muted-foreground">Market Cap: <span class="text-foreground font-medium" data-mock="true">$850K</span></p>
+                            <p class="text-muted-foreground">24h: <span class="text-accent font-medium" data-mock="true">+42.1%</span></p>
+                        </div>
+                        <button 
+                            class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+                            data-event="click:handleVote"
+                        >
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Vote</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Submission Card 4 -->
+                <div class="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl font-bold text-primary-foreground" data-mock="true">
+                                💎
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold" data-bind="submission.name" data-mock="true">DiamondHands</h3>
+                                <p class="text-muted-foreground" data-bind="submission.ticker" data-mock="true">$DIAMOND</p>
+                                <p class="text-xs text-muted-foreground mt-1" data-bind="submission.address" data-mock="true">4K7x...mL29</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-accent" data-bind="submission.votes" data-mock="true">89</div>
+                            <p class="text-sm text-muted-foreground">votes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-placeholder h-32 rounded-lg mb-4 flex items-center justify-center border border-border">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line text-3xl text-muted-foreground mb-2"></i>
+                            <p class="text-sm text-muted-foreground">Live Chart Integration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm space-y-1">
+                            <p class="text-muted-foreground">Market Cap: <span class="text-foreground font-medium" data-mock="true">$3.2M</span></p>
+                            <p class="text-muted-foreground">24h: <span class="text-accent font-medium" data-mock="true">+7.8%</span></p>
+                        </div>
+                        <button 
+                            class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+                            data-event="click:handleVote"
+                        >
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Vote</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_MAP -->
+            
+            <div class="text-center mt-8">
+                <button class="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-colors">
+                    Load More Submissions
+                </button>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: VotingSection -->
+
+        <!-- @COMPONENT: PumpFeed -->
+        <section>
+            <h2 class="text-3xl font-bold mb-8">Recent Pumps</h2>
+            
+            <!-- @MAP: recentPumps.map(pump => ( -->
+            <div class="space-y-4">
+                <!-- Pump Result 1 -->
+                <div class="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
+                                <i class="fas fa-trophy text-primary-foreground"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg" data-bind="pump.tokenName" data-mock="true">RocketCoin ($ROCKET)</h3>
+                                <p class="text-sm text-muted-foreground" data-bind="pump.timestamp" data-mock="true">2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-bold text-accent" data-bind="pump.amount" data-mock="true">8.5 SOL</p>
+                            <p class="text-sm text-muted-foreground">pumped</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-muted-foreground">Votes: <span class="text-foreground font-medium" data-mock="true">342</span></span>
+                            <span class="text-muted-foreground">Price Impact: <span class="text-accent font-medium" data-mock="true">+23.4%</span></span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <a href="#" class="text-primary hover:text-primary/80 transition-colors" data-mock="true">
+                                <i class="fas fa-external-link-alt mr-1"></i>Solscan
+                            </a>
+                            <div class="text-2xl animate-bounce-gentle" data-mock="true">🚀</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pump Result 2 -->
+                <div class="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                                <i class="fas fa-medal text-primary-foreground"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg" data-bind="pump.tokenName" data-mock="true">MoonToken ($MOON)</h3>
+                                <p class="text-sm text-muted-foreground" data-bind="pump.timestamp" data-mock="true">12 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-bold text-accent" data-bind="pump.amount" data-mock="true">11.2 SOL</p>
+                            <p class="text-sm text-muted-foreground">pumped</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-muted-foreground">Votes: <span class="text-foreground font-medium" data-mock="true">298</span></span>
+                            <span class="text-muted-foreground">Price Impact: <span class="text-accent font-medium" data-mock="true">+31.7%</span></span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <a href="#" class="text-primary hover:text-primary/80 transition-colors" data-mock="true">
+                                <i class="fas fa-external-link-alt mr-1"></i>Solscan
+                            </a>
+                            <div class="text-2xl animate-bounce-gentle" data-mock="true">🌙</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pump Result 3 -->
+                <div class="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-warning to-destructive flex items-center justify-center">
+                                <i class="fas fa-award text-primary-foreground"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg" data-bind="pump.tokenName" data-mock="true">SafeCoin ($SAFE)</h3>
+                                <p class="text-sm text-muted-foreground" data-bind="pump.timestamp" data-mock="true">1 day ago</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-bold text-accent" data-bind="pump.amount" data-mock="true">6.8 SOL</p>
+                            <p class="text-sm text-muted-foreground">pumped</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-sm">
+                            <span class="text-muted-foreground">Votes: <span class="text-foreground font-medium" data-mock="true">187</span></span>
+                            <span class="text-muted-foreground">Price Impact: <span class="text-accent font-medium" data-mock="true">+18.9%</span></span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <a href="#" class="text-primary hover:text-primary/80 transition-colors" data-mock="true">
+                                <i class="fas fa-external-link-alt mr-1"></i>Solscan
+                            </a>
+                            <div class="text-2xl animate-bounce-gentle" data-mock="true">🛡️</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_MAP -->
+            
+            <div class="text-center mt-8">
+                <button class="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-colors">
+                    View All Pump History
+                </button>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: PumpFeed -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-border bg-card/30 mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                            <i class="fas fa-rocket text-primary-foreground"></i>
+                        </div>
+                        <span class="text-lg font-bold">Community Cabal</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground">Decentralized community-driven pump platform on Solana.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Platform</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">How it Works</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Pump History</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Statistics</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Community</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Discord</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Twitter</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Telegram</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-muted-foreground">
+                        <li><a href="#" class="hover:text-foreground transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">API</a></li>
+                        <li><a href="#" class="hover:text-foreground transition-colors">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
+                <p>&copy; 2024 Community Cabal. Built on Solana. Not financial advice.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            'use strict';
+            
+            // Countdown timer functionality
+            function updateCountdown() {
+                // Mock countdown - in production this would sync with server
+                const countdownElement = document.querySelector('[data-bind="timeRemaining"]');
+                if (countdownElement) {
+                    let minutes = 6;
+                    let seconds = 23;
+                    
+                    setInterval(() => {
+                        seconds--;
+                        if (seconds < 0) {
+                            seconds = 59;
+                            minutes--;
+                        }
+                        if (minutes < 0) {
+                            minutes = 9; // Reset for demo
+                            seconds = 59;
+                        }
+                        
+                        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        countdownElement.textContent = formattedTime;
+                    }, 1000);
+                }
+            }
+            
+            // Vote button interactions
+            function initializeVoting() {
+                document.querySelectorAll('[data-event*="handleVote"]').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Visual feedback
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1.05)';
+                            setTimeout(() => {
+                                this.style.transform = '';
+                            }, 150);
+                        }, 150);
+                        
+                        // Mock vote increment
+                        const voteCountElement = this.closest('.bg-card').querySelector('[data-bind="submission.votes"]');
+                        if (voteCountElement) {
+                            const currentVotes = parseInt(voteCountElement.textContent);
+                            voteCountElement.textContent = currentVotes + 1;
+                        }
+                        
+                        // TODO: Send vote to backend
+                        console.log('Vote submitted');
+                    });
+                });
+            }
+            
+            // Address validation
+            function initializeAddressValidation() {
+                const addressInput = document.getElementById('contractAddress');
+                if (addressInput) {
+                    addressInput.addEventListener('input', function() {
+                        const address = this.value.trim();
+                        // Basic Solana address validation (44 characters, base58)
+                        const isValid = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+                        
+                        const errorElement = document.querySelector('[data-bind="addressError"]');
+                        if (errorElement) {
+                            if (address && !isValid) {
+                                errorElement.classList.remove('hidden');
+                                this.classList.add('border-destructive');
+                            } else {
+                                errorElement.classList.add('hidden');
+                                this.classList.remove('border-destructive');
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Paste functionality
+            function initializePasteButton() {
+                document.querySelectorAll('[data-event*="pasteAddress"]').forEach(button => {
+                    button.addEventListener('click', async function() {
+                        try {
+                            const text = await navigator.clipboard.readText();
+                            const addressInput = document.getElementById('contractAddress');
+                            if (addressInput) {
+                                addressInput.value = text;
+                                addressInput.dispatchEvent(new Event('input'));
+                            }
+                        } catch (err) {
+                            console.log('Failed to read clipboard');
+                        }
+                    });
+                });
+            }
+            
+            // Form submission
+            function initializeFormSubmission() {
+                document.querySelectorAll('[data-event*="handleSubmission"]').forEach(form => {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        const addressInput = document.getElementById('contractAddress');
+                        const address = addressInput?.value.trim();
+                        
+                        if (!address) {
+                            alert('Please enter a contract address');
+                            return;
+                        }
+                        
+                        // TODO: Validate and submit to backend
+                        console.log('Submitting address:', address);
+                        
+                        // Mock success feedback
+                        const submitButton = this.querySelector('button[type="submit"]');
+                        const originalText = submitButton.innerHTML;
+                        submitButton.innerHTML = '<i class="fas fa-check mr-2"></i>Submitted!';
+                        submitButton.disabled = true;
+                        
+                        setTimeout(() => {
+                            submitButton.innerHTML = originalText;
+                            submitButton.disabled = false;
+                            addressInput.value = '';
+                        }, 2000);
+                    });
+                });
+            }
+            
+            // Initialize all functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                updateCountdown();
+                initializeVoting();
+                initializeAddressValidation();
+                initializePasteButton();
+                initializeFormSubmission();
+            });
+        })();
+    </script>
+</body>
+</html>

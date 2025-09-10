@@ -12,6 +12,7 @@ export interface IStorage {
   createVote(vote: InsertVote): Promise<Vote>;
   getVotesBySubmission(submissionId: string): Promise<Vote[]>;
   hasUserVoted(submissionId: string, voterAddress: string): Promise<boolean>;
+  resetAllVotes(): Promise<void>;
   
   // Pump History
   getPumpHistory(): Promise<PumpHistory[]>;
@@ -78,6 +79,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.votes.values()).filter(
       (vote) => vote.submissionId === submissionId
     );
+  }
+
+  async resetAllVotes(): Promise<void> {
+    // clear votes map
+    this.votes.clear();
+    // reset counts on submissions
+    for (const [id, submission] of this.submissions.entries()) {
+      submission.votes = 0;
+      this.submissions.set(id, submission);
+    }
   }
 
   async hasUserVoted(submissionId: string, voterAddress: string): Promise<boolean> {

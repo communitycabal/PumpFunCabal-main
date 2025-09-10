@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { type PumpHistory } from "@shared/schema";
 import { formatAddress } from "@/lib/solana-utils";
-import { Trophy, Medal, Award, ExternalLink, TrendingUp } from "lucide-react";
+import { Trophy, Medal, Award, ExternalLink, TrendingUp, Copy } from "lucide-react";
 
 const iconMap = {
   0: Trophy,
@@ -14,6 +14,9 @@ const iconMap = {
 export default function PumpFeed() {
   const { data: pumpHistory = [], isLoading } = useQuery<PumpHistory[]>({
     queryKey: ["/api/pump-history"],
+    // Keep the feed fresh so winners appear quickly after each round ends
+    refetchInterval: 4000,
+    refetchOnWindowFocus: true,
   });
 
   const formatTimeAgo = (date: Date | string) => {
@@ -79,14 +82,22 @@ export default function PumpFeed() {
                         <p className="text-sm text-muted-foreground" data-testid={`text-pump-time-${pump.id}`}>
                           {formatTimeAgo(pump.createdAt!)}
                         </p>
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className="font-mono text-muted-foreground" data-testid={`text-pump-address-${pump.id}`}>
+                            {formatAddress(pump.contractAddress)}
+                          </span>
+                          <button
+                            aria-label="Copy contract address"
+                            className="inline-flex items-center gap-1 px-2 py-1 border border-border rounded-md hover:bg-muted/40 transition-colors"
+                            onClick={() => navigator.clipboard.writeText(pump.contractAddress)}
+                            data-testid={`button-copy-address-${pump.id}`}
+                          >
+                            <Copy className="h-3 w-3" /> Copy
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-accent" data-testid={`text-pump-amount-${pump.id}`}>
-                        {pump.amountPumped} SOL
-                      </p>
-                      <p className="text-sm text-muted-foreground">pumped</p>
-                    </div>
+                    {/* Removed SOL pumped amount per request */}
                   </div>
                   
                   <div className="mt-4 flex items-center justify-between">
@@ -96,13 +107,18 @@ export default function PumpFeed() {
                           {pump.votes}
                         </span>
                       </span>
-                      <span className="text-muted-foreground">
-                        Price Impact: <span className="text-accent font-medium" data-testid={`text-pump-impact-${pump.id}`}>
-                          {pump.priceImpact || "+23.4%"}
-                        </span>
-                      </span>
                     </div>
                     <div className="flex items-center space-x-3">
+                      <a 
+                        href={`https://pump.fun/coin/${pump.contractAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 transition-colors flex items-center"
+                        data-testid={`link-pumpfun-${pump.id}`}
+                      >
+                        <ExternalLink className="mr-1 h-3 w-3" />
+                        Pump.fun
+                      </a>
                       {pump.transactionHash && (
                         <a 
                           href={`https://solscan.io/tx/${pump.transactionHash}`}

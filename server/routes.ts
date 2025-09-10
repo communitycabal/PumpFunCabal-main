@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { countdownService } from "./countdown-service";
+import { roundService } from "./round-service";
 import { insertSubmissionSchema, insertVoteSchema } from "@shared/schema";
 import { tokenService } from "./token-service";
 import { z } from "zod";
@@ -59,6 +61,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple in-memory rate limiter: allow one vote per voter per submission every 10 seconds
+  const lastVoteByKey = new Map<string, number>();
+
   // Vote for a submission
   app.post("/api/submissions/:id/vote", async (req, res) => {
     try {
@@ -68,12 +73,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         voterAddress: req.body.voterAddress
       });
 
-      // Check if user already voted
-      if (voteData.voterAddress) {
-        const hasVoted = await storage.hasUserVoted(id, voteData.voterAddress);
-        if (hasVoted) {
-          return res.status(409).json({ message: "User has already voted for this submission" });
-        }
+      // Enforce 10s cooldown per voter per submission
+      const voterKey = `${id}:${voteData.voterAddress || 'anon'}`;
+      const now = Date.now();
+      const last = lastVoteByKey.get(voterKey) || 0;
+      const diff = now - last;
+      const cooldownMs = 10_000;
+      if (diff < cooldownMs) {
+        const retryAfterSeconds = Math.ceil((cooldownMs - diff) / 1000);
+        return res.status(429).json({ message: "Rate limited: vote again later", retryAfterSeconds });
       }
 
       await storage.createVote(voteData);
@@ -81,6 +89,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update vote count
       const votes = await storage.getVotesBySubmission(id);
       await storage.updateSubmissionVotes(id, votes.length);
+
+      // Record last vote time
+      lastVoteByKey.set(voterKey, now);
 
       res.json({ message: "Vote recorded successfully", voteCount: votes.length });
     } catch (error) {
@@ -115,6 +126,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Countdown status
+  app.get("/api/countdown", async (_req, res) => {
+    try {
+      const now = Date.now();
+      const remainingSeconds = countdownService.getRemainingSeconds(now);
+      res.json({
+        startTimestampMs: countdownService.getStartTimestampMs(),
+        endTimestampMs: countdownService.getEndTimestampMs(),
+        nowTimestampMs: now,
+        remainingSeconds,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch countdown" });
+    }
+  });
+
+  // Round status (phase and remaining)
+  app.get("/api/round", (_req, res) => {
+    try {
+      res.json(roundService.instance.toDTO());
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch round" });
     }
   });
 
