@@ -22,11 +22,28 @@ export class RoundService {
   constructor(votingDurationSec = 10 * 60) {
     this.filePath = path.resolve(__dirname, "..", "data", "round.json");
     this.ensureDir();
-    this.state = this.load() ?? {
-      phase: "voting",
-      votingStartMs: Date.now(),
-      votingDurationSec,
-    };
+    const loadedState = this.load();
+    
+    // If no state exists, start fresh
+    if (!loadedState) {
+      this.state = {
+        phase: "voting",
+        votingStartMs: Date.now(),
+        votingDurationSec,
+      };
+    } else {
+      this.state = loadedState;
+      // Check if the voting period has already ended and reset if needed
+      const now = Date.now();
+      const endMs = this.state.votingStartMs + this.state.votingDurationSec * 1000;
+      if (now >= endMs) {
+        this.state = {
+          phase: "voting",
+          votingStartMs: now,
+          votingDurationSec,
+        };
+      }
+    }
     this.persist();
   }
 
